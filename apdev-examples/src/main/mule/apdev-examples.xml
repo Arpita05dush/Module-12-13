@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	
+	<flow name="privateFlow" doc:id="71ecc9fa-506e-4366-8c2f-905f7e567d65" >
+		<vm:listener queueName="goodbye" doc:name="Listener" doc:id="1a33e48f-a032-4db1-8401-039f0e7474ee" config-ref="VM_Config"/>
+		<http:request method="GET" doc:name="GET /goodbye" doc:id="8e05a1a6-96a7-4f2b-bd52-634adb318317" config-ref="HTTP_Request_configuration" path="/goodbye" responseTimeout="300000">
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"Name" : "Maxine"
+}]]]></http:query-params>
+		</http:request>
+	</flow>
+	<sub-flow name="subflow" doc:id="cb4ae85b-3b7e-4363-bbd0-8c56d2ec67d3" >
+		<set-variable value="Test" doc:name="firstName" doc:id="e6207b6b-e401-435a-bcd7-90f16591d13e" variableName="Test" />
+		<set-payload value="Hello" doc:name="Hello" doc:id="09fcbb41-fe9f-4cc0-9d98-749c52badcca" />
+	</sub-flow>
+	<flow name="helloFlow" doc:id="2480a9ef-7c61-4f0a-952e-de6954394cc5" >
+		<http:listener doc:name="GET /hello" doc:id="d353675a-adde-4fb9-aa65-825e0240b79a" config-ref="HTTP_Listener_config" path="/hello" allowedMethods="GET"/>
+		<flow-ref doc:name="Flow Reference" doc:id="88c3670f-b0c2-4912-a799-610bc4175d34" name="subflow"/>
+		<vm:publish queueName="goodbye" doc:name="Publish" doc:id="9db68087-307f-4c80-87ec-f5a16bc4f514" config-ref="VM_Config"/>
+		<logger level="INFO" doc:name="Payload" doc:id="d91bec23-4e4b-4849-8069-38e11b770b8e" message="#[vars.Test]"/>
+	</flow>
+	<flow name="goodbyeFlow" doc:id="05815c4b-21c4-41d4-8027-4e8694cfd20a" >
+		<http:listener doc:name="GET /goodbye" doc:id="f5e77244-b28c-461d-bb26-e08aee34fc26" config-ref="HTTP_Listener_config" path="/goodbye"/>
+		<set-payload value="#[attributes.queryParams.Name]" doc:name="Goodbye" doc:id="ed6a695d-5164-45c0-a756-b220a4cf01e0" />
+		<logger level="INFO" doc:name="Logger" doc:id="5f80123b-6e09-4c4b-9159-609e7a3ee0f6" message="#[attributes.queryParams.fname]"/>
+	</flow>
+</mule>
